@@ -615,6 +615,23 @@
   }
 
   /* Responsive */
+  /* Mobile hero fix - remove scale that causes blur */
+  @media (max-width: 900px) {
+    .hero-bg {
+      transform: none !important;
+      animation: none !important;
+    }
+  }
+
+  /* Touch trail canvas */
+  #touch-trail {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9997;
+  }
+
   @media (max-width: 900px) {
     nav { padding: 24px 30px; }
     .nav-links { display: none; }
@@ -633,6 +650,9 @@
 </style>
 </head>
 <body>
+
+<!-- Touch trail canvas -->
+<canvas id="touch-trail"></canvas>
 
 <!-- Custom cursor -->
 <div class="cursor" id="cursor"></div>
@@ -891,7 +911,52 @@
 
   reveals.forEach(el => observer.observe(el));
 
-  // Nav scroll effect
+  // Touch trail for mobile
+  const canvas = document.getElementById('touch-trail');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  let particles = [];
+  function addParticles(x, y) {
+    for (let i = 0; i < 6; i++) {
+      particles.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        alpha: 1,
+        size: Math.random() * 4 + 2,
+        color: Math.random() > 0.5 ? '#C9A84C' : '#E8C97A'
+      });
+    }
+  }
+
+  document.addEventListener('touchmove', e => {
+    const touch = e.touches[0];
+    addParticles(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles = particles.filter(p => p.alpha > 0.02);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha *= 0.92;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + Math.floor(p.alpha * 255).toString(16).padStart(2, '0');
+      ctx.fill();
+    });
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+
+
   const nav = document.querySelector('nav');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 80) {
