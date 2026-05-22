@@ -115,6 +115,19 @@
     filter: brightness(0.55) contrast(1.2) saturate(1.1);
     transform: scale(1.05);
     animation: slowZoom 20s ease-in-out infinite alternate;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+
+  /* Mobile hero fix */
+  @media (max-width: 900px) {
+    .hero-bg {
+      transform: translateZ(0) !important;
+      animation: none !important;
+      background-position: 60% top;
+      filter: brightness(0.65) contrast(1.2) saturate(1.1);
+    }
   }
   @keyframes slowZoom {
     from { transform: scale(1.05); }
